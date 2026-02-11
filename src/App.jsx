@@ -84,8 +84,7 @@ function App() {
 
   const addProduct = async()=>{
     try {
-      const response = await axios.post(`${API_BASE}/api/${API_PATH}/admin/product`,{data:productData});
-      console.log(response.data);
+      await axios.post(`${API_BASE}/api/${API_PATH}/admin/product`,{data:productData});
       await getProducts();
     } catch (error) {
       console.log(error.response.data.message);
@@ -94,8 +93,7 @@ function App() {
 
   const updateProduct= async(id)=>{
   try{
-    const response = await axios.put(`${API_BASE}/api/${API_PATH}/admin/product/${id}`,{data:productData});
-     console.log(response.data);
+     await axios.put(`${API_BASE}/api/${API_PATH}/admin/product/${id}`,{data:productData});
      await getProducts();
   }catch(error){
     console.log(error.response.data.message);
@@ -104,8 +102,7 @@ function App() {
 
   const deleteProduct = async(id)=>{
     try {
-      const response = await axios.delete(`${API_BASE}/api/${API_PATH}/admin/product/${id}`);
-      console.log(response.data);
+      await axios.delete(`${API_BASE}/api/${API_PATH}/admin/product/${id}`);
       await getProducts();
     } catch (error) {
       console.log(error.response.data.message);

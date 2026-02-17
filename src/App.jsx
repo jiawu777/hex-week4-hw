@@ -10,6 +10,7 @@ const API_PATH = VITE_API_PATH;
 import Products from "./views/Products.jsx";
 import Login from "./views/Login.jsx";
 import ProductModal from "./components/ProductModal.jsx";
+import Pagination from "./components/Pagination.jsx";
 
 function App() {
   const INITIAL_PRODUCT_DATA = { 
@@ -27,18 +28,11 @@ function App() {
 
   const [isAuth, setIsAuth] = useState(false);
   const [products,setProducts] = useState([]);
+  const [pagination,setPagination] = useState({});
   const [templateProduct,setTemplateProduct] = useState(INITIAL_PRODUCT_DATA);
   const productModalRef = useRef(null);
   const [modalType,setModalType] = useState("");
   
-  const getProducts = async () => {
-    try {
-      const response = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products`);
-      setProducts(response.data.products);
-    } catch (err) {
-      console.log(err.response.data.message);
-  }}
-
   const checkAdmin = async () => {
     try {
       await axios.post(`${API_BASE}/api/user/check`);
@@ -47,6 +41,16 @@ function App() {
       console.log(err.response.data.message);
     }
   };
+
+  const getProducts = async (page=1) => {
+    try {
+      //改url取頁碼，預設為1
+      const response = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products?page=${page}`);
+      setProducts(response.data.products);
+      setPagination(response.data.pagination);
+    } catch (err) {
+      console.log(err.response.data.message);
+  }}
 
   const openModal = (type,product) => {
     setTemplateProduct((pre)=>({...pre,...product}));
@@ -93,6 +97,10 @@ useEffect(() => {
      getProducts={getProducts}
      productModalRef={productModalRef}
      />
+     <Pagination 
+     pagination={pagination}
+     setPagination={setPagination}
+     changePage={getProducts}/>
     </>
   );
 }

@@ -9,7 +9,7 @@ const API_PATH = VITE_API_PATH;
 
 import Products from "./views/Products.jsx";
 import Login from "./views/Login.jsx";
-import Modal from "./components/Modal.jsx";
+import ProductModal from "./components/ProductModal.jsx";
 
 function App() {
   const INITIAL_PRODUCT_DATA = { 
@@ -83,7 +83,7 @@ useEffect(() => {
       ) : (
        <Login setIsAuth={setIsAuth} API_BASE={API_BASE} />
       )}
-     <Modal 
+     <ProductModal 
      API_BASE={API_BASE} 
      API_PATH={API_PATH} 
      modalType={modalType} 

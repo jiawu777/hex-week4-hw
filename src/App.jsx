@@ -102,9 +102,9 @@ function App() {
     try{
       await axios[method](url,productData);
       if(modalType==="create"){
-        alert("新增成功");
+        alert(`${templateProduct.title}新增成功`);
       }else{
-        alert("更新成功");
+        alert(`${templateProduct.title}更新成功`);
       }
       await getProducts();
     }catch(err){

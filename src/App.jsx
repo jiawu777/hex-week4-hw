@@ -95,6 +95,7 @@ function App() {
         origin_price: Number(templateProduct.origin_price),
         price: Number(templateProduct.price),
         is_enabled: templateProduct.is_enabled ? 1 : 0,
+        imagesUrl: templateProduct.imagesUrl.filter((url)=>url.trim()!=="") //過濾掉空字串的圖片網址
       }
     }
 

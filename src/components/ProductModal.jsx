@@ -1,10 +1,18 @@
 import axios from "axios";
+import React from "react";
+const{useEffect}=React;
 
-const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplateProduct,closeModal,getProducts,productModalRef})=>{
+const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,closeModal,getProducts,productModalRef,handleFileChange})=>{
   const defaultImageUrl="https://storage.googleapis.com/vue-course-api.appspot.com/jia-hex/1770819402945.jpg";
- const handleModalInputChange = (e) => {
+const [tempData,setTempData] = React.useState(templateProduct);
+  useEffect(()=>{
+    setTempData(templateProduct);
+  },[templateProduct])
+
+
+  const handleModalInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setTemplateProduct((prevData) => ({
+      setTempData((prevData) => ({
       ...prevData,
       //id需判別為Number、checkbox或文字，以符合API需求
       [name]: type === "checkbox" ? checked : value,
@@ -21,18 +29,18 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
 
     const productData = {
       data:{
-        ...templateProduct,
-        origin_price: Number(templateProduct.origin_price),
-        price: Number(templateProduct.price),
-        is_enabled: templateProduct.is_enabled ? 1 : 0,
-        imagesUrl: templateProduct.imagesUrl.filter((url)=>url.trim()!=="") //過濾掉空字串的圖片網址
+        ...tempData,
+        origin_price: Number(tempData.origin_price),
+        price: Number(tempData.price),
+        is_enabled: tempData.is_enabled ? 1 : 0,
+        imagesUrl: tempData.imagesUrl.filter((url)=>url.trim()!=="") //過濾掉空字串的圖片網址
       }
     }
 
     try{
       await axios[method](url,productData);
       if(modalType==="create"){
-        alert(`${templateProduct.title}新增成功`);
+        alert(`${tempData.title}新增成功`);
       }else{
         alert(`${templateProduct.title}更新成功`);
       }
@@ -53,21 +61,21 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
   }
 
   const handleImageCreate=()=>{
-    const newImagesUrl = [...templateProduct.imagesUrl];
-    newImagesUrl.unshift(templateProduct.imageUrl);
-    setTemplateProduct({...templateProduct, imagesUrl: newImagesUrl, imageUrl: ""})
+    const newImagesUrl = [...tempData.imagesUrl];
+    newImagesUrl.unshift(tempData.imageUrl);
+    setTempData({...tempData, imagesUrl: newImagesUrl})
   }
 
   const handleImageChange=(e,index)=>{
-      const newImagesUrl = [...templateProduct.imagesUrl];
+      const newImagesUrl = [...tempData.imagesUrl];
       newImagesUrl[index]=e.target.value;
-      setTemplateProduct({...templateProduct, imagesUrl: newImagesUrl});
+      setTempData({...tempData, imagesUrl: newImagesUrl});
   }
 
   const handleImageDelete=(index)=>{
-    const newImagesUrl = [...templateProduct.imagesUrl];
+    const newImagesUrl = [...tempData.imagesUrl];
     newImagesUrl.splice(index,1);
-    setTemplateProduct({...templateProduct, imagesUrl: newImagesUrl});
+    setTempData({...tempData, imagesUrl: newImagesUrl});
   }
 
     return(
@@ -88,7 +96,6 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                 <button
                   type="button"
                   className="btn-close"
-                  // data-bs-dismiss="modal"
                   onClick={()=>closeModal()}
                   aria-label="Close"
                   ></button>
@@ -97,12 +104,26 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                 {modalType==="delete"? (
                     <p className="fs-4">
                       確定要刪除
-                      <span className="text-danger">{templateProduct.title}</span>嗎？
+                      <span className="text-danger">{tempData.title}</span>嗎？
                     </p>
                         ):
                 <div className="row">
                   <div className="col-sm-4">
                     <div className="mb-2">
+                      <div>
+                        <label htmlFor="fileInput" className="form-label">
+                          圖片上傳
+                        </label>
+                        <input
+                          id="fileInput"
+                          name="fileInput"
+                          type="file"
+                          accept=".jpg,.jpeg,.png"
+                          className="form-control"
+                          placeholder="請輸入圖片連結"
+                          onChange={handleFileChange}
+                          />
+                      </div>
                       <div>
                         <label htmlFor="imageUrl" className="form-label">
                           輸入圖片網址
@@ -114,23 +135,25 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                           className="form-control"
                           placeholder="請輸入圖片連結"
                           onChange={handleModalInputChange}
-                          value=""
+                          value={tempData.imageUrl}
                           required
                           autoFocus
                           />
                       </div>
-                        <img className="img-fluid rounded" src={templateProduct.imageUrl || defaultImageUrl} alt="無法取得商品圖片" />
+                      <img className="img-fluid rounded" src={tempData.imageUrl || defaultImageUrl} alt="無法取得商品圖片" />
+                      <div>
+                        <button className="btn btn-outline-primary btn-sm d-block w-100" 
+                          onClick={()=>{
+                            handleImageCreate();
+                            setTempData((pre)=>({...pre,imageUrl:""}));
+                          }}>
+                            新增圖片
+                        </button>
+                      </div>
                     </div>
                   
-                    <div>
-                      <button className="btn btn-outline-primary btn-sm d-block w-100" 
-                      onClick={()=>{
-                        handleImageCreate()
-                      }}>
-                        新增圖片
-                      </button>
-                    </div>
-                      {templateProduct.imagesUrl?.map((url,index)=>{
+                    
+                      {tempData.imagesUrl?.map((url,index)=>{
                         return(
                           <div className="position-relative d-inline-block mt-3" key={index}>
                               <div>
@@ -170,7 +193,7 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                         type="text"
                         className="form-control"
                         placeholder="請輸入標題"
-                        value={templateProduct.title}
+                        value={tempData.title}
                       onChange={handleModalInputChange}
                       required
                       autoFocus
@@ -186,7 +209,7 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                           type="text"
                           className="form-control"
                           placeholder="請輸入分類"
-                          value={templateProduct.category}
+                          value={tempData.category}
                       onChange={handleModalInputChange}
                       required
                       autoFocus
@@ -199,7 +222,7 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                           type="text"
                           className="form-control"
                           placeholder="請輸入單位"
-                          value={templateProduct.unit}
+                          value={tempData.unit}
                       onChange={handleModalInputChange}
                       required
                       autoFocus
@@ -217,7 +240,7 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                           min="0"
                           className="form-control"
                           placeholder="請輸入原價"
-                          value={templateProduct.origin_price}
+                          value={tempData.origin_price}
                       onChange={handleModalInputChange}
                       required
                       autoFocus
@@ -232,7 +255,7 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                           min="0"
                           className="form-control"
                           placeholder="請輸入售價"
-                          value={templateProduct.price}
+                          value={tempData.price}
                       onChange={handleModalInputChange}
                       required
                       autoFocus
@@ -248,7 +271,7 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                         name="description"
                         className="form-control"
                         placeholder="請輸入產品描述"
-                        value={templateProduct.description}
+                        value={tempData.description}
                       onChange={handleModalInputChange}
                       required
                       autoFocus
@@ -261,7 +284,7 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                         name="content"
                         className="form-control"
                         placeholder="請輸入說明內容"
-                        value={templateProduct.content}
+                        value={tempData.content}
                       onChange={handleModalInputChange}
                       required
                       autoFocus
@@ -274,7 +297,7 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                           name="is_enabled"
                           className="form-check-input"
                           type="checkbox"
-                          checked={templateProduct.is_enabled}
+                          checked={tempData.is_enabled}
                       onChange={handleModalInputChange}
                       required
                       autoFocus
@@ -291,14 +314,13 @@ const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,setTemplatePro
                 <button
                   type="button"
                   className="btn btn-outline-secondary"
-                  // data-bs-dismiss="modal"
                   onClick={()=>closeModal()}
                   >
                   取消
                 </button>
                 <button type="button" className={`btn btn-${modalType==="delete"?"danger":"primary"}`} 
                 //確認按鈕會根據updateProductIdRef是否有值來判斷是要呼叫新增或更新的API
-                onClick={()=>{ modalType==="delete"?deleteProduct(templateProduct.id):updateProduct(templateProduct.id); closeModal();}}
+                onClick={()=>{ modalType==="delete"?deleteProduct(tempData.id):updateProduct(tempData.id); closeModal();}}
                 // data-bs-dismiss="modal"
                 >{modalType==="delete"?"確認刪除":"確認"}</button>
               </div>

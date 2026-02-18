@@ -62,6 +62,26 @@ function App() {
       productModalRef.current.hide();
   }
 
+  const handleFileChange=async(e)=>{
+    const url = `${API_BASE}/api/${API_PATH}/admin/upload`
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const formData = new FormData();
+    formData.append('file-to-upload', file);
+    try {
+      const response = await axios.post(url, formData);
+      const imageUrl = response.data.imageUrl;
+      setTemplateProduct((pre)=>({...pre,imageUrl}));
+    } catch (error) {
+      console.log(error.response.data);
+    }finally{
+      //清空input的值，讓使用者可以上傳同一張圖片
+      e.target.value="";
+    }
+    
+  }
+
 useEffect(() => {
     const token = document.cookie.replace(
       /(?:(?:^|.*;\s*)hexToken\s*=\s*([^;]*).*$)|^.*$/,
@@ -95,6 +115,7 @@ useEffect(() => {
      setTemplateProduct={setTemplateProduct} 
      closeModal={closeModal}
      getProducts={getProducts}
+     handleFileChange={handleFileChange}
      productModalRef={productModalRef}
      />
      <Pagination 

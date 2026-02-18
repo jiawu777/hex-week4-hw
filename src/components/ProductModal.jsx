@@ -2,8 +2,9 @@ import axios from "axios";
 import React from "react";
 const{useEffect}=React;
 
-const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,closeModal,getProducts,productModalRef,handleFileChange})=>{
-  const defaultImageUrl="https://storage.googleapis.com/vue-course-api.appspot.com/jia-hex/1770819402945.jpg";
+const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,closeModal,getProducts,productModalRef,handleFileChange,pagination})=>{
+const defaultImageUrl="https://storage.googleapis.com/vue-course-api.appspot.com/jia-hex/1770819402945.jpg";
+const {current_page} = pagination || 1;
 const [tempData,setTempData] = React.useState(templateProduct);
   useEffect(()=>{
     setTempData(templateProduct);
@@ -42,9 +43,9 @@ const [tempData,setTempData] = React.useState(templateProduct);
       if(modalType==="create"){
         alert(`${tempData.title}新增成功`);
       }else{
-        alert(`${templateProduct.title}更新成功`);
+        alert(`${tempData.title}更新成功`);
       }
-      await getProducts();
+      await getProducts(current_page);
     }catch(err){
       console.log(err.response.data.message);
     }
@@ -54,7 +55,7 @@ const [tempData,setTempData] = React.useState(templateProduct);
     try {
       await axios.delete(`${API_BASE}/api/${API_PATH}/admin/product/${id}`);
       alert("刪除成功");
-      await getProducts();
+      await getProducts(current_page);
     } catch (err) {
       console.log(err.response.data.message);
     }

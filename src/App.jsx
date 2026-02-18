@@ -117,6 +117,7 @@ useEffect(() => {
      getProducts={getProducts}
      handleFileChange={handleFileChange}
      productModalRef={productModalRef}
+     pagination={pagination}
      />
      <Pagination 
      pagination={pagination}

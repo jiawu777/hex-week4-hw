@@ -4,7 +4,7 @@ const{useEffect}=React;
 
 const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,closeModal,getProducts,productModalRef,handleFileChange,pagination})=>{
 const defaultImageUrl="https://storage.googleapis.com/vue-course-api.appspot.com/jia-hex/1770819402945.jpg";
-const {current_page} = pagination || 1;
+const {current_page = 1} = pagination;
 const [tempData,setTempData] = React.useState(templateProduct);
   useEffect(()=>{
     setTempData(templateProduct);
@@ -62,6 +62,7 @@ const [tempData,setTempData] = React.useState(templateProduct);
   }
 
   const handleImageCreate=()=>{
+    if(!tempData.imageUrl.trim()) return;
     const newImagesUrl = [...tempData.imagesUrl];
     newImagesUrl.unshift(tempData.imageUrl);
     setTempData({...tempData, imagesUrl: newImagesUrl})
@@ -80,7 +81,7 @@ const [tempData,setTempData] = React.useState(templateProduct);
   }
 
     return(
-         <div
+        <div
         id="productModal"
         className="modal fade"
         tabIndex="-1"

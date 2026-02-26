@@ -92,6 +92,16 @@ useEffect(() => {
     productModalRef.current = new bootstrap.Modal('#productModal', {
       keyboard: false
     });
+
+     // Modal 關閉時移除焦點
+    document
+          .querySelector("#productModal")
+          .addEventListener("hide.bs.modal", () => {
+            if (document.activeElement instanceof HTMLElement) {
+              document.activeElement.blur();
+            }
+          });
+          
     checkAdmin();
   }, []);
 

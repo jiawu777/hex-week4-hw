@@ -1,11 +1,12 @@
 import axios from "axios";
 import React from "react";
-const{useEffect}=React;
+import { useState, useEffect } from "react";
 
 const ProductModal =({API_BASE,API_PATH,modalType,templateProduct,closeModal,getProducts,productModalRef,handleFileChange,pagination})=>{
 const defaultImageUrl="https://storage.googleapis.com/vue-course-api.appspot.com/jia-hex/1770819402945.jpg";
 const {current_page = 1} = pagination;
 const [tempData,setTempData] = React.useState(templateProduct);
+const [errors,setErrors] = useState({});
   useEffect(()=>{
     setTempData(templateProduct);
   },[templateProduct])
@@ -18,6 +19,14 @@ const [tempData,setTempData] = React.useState(templateProduct);
       //id需判別為Number、checkbox或文字，以符合API需求
       [name]: type === "checkbox" ? checked : value,
     }));
+
+
+    if(errors[name]){
+      setErrors((prevErrors)=>({
+        ...prevErrors,
+        [name]: ""
+      }))
+    }
   };
 
   const updateProduct= async(id)=>{
@@ -37,17 +46,53 @@ const [tempData,setTempData] = React.useState(templateProduct);
         imagesUrl: tempData.imagesUrl.filter((url)=>url.trim()!=="") //過濾掉空字串的圖片網址
       }
     }
+    const newErrors = {};
+
+    const validateForm = (productData) => {
+    if (!productData.title.trim()) {
+      newErrors.title = "商品名稱不可為空";
+    }
+    if (!productData.category.trim()) {
+      newErrors.category = "商品分類不可為空";
+    }
+    if (productData.origin_price <= 0) {
+      newErrors.origin_price = "原價必須大於0";
+    }
+    if (productData.price <= 0) {
+      newErrors.price = "售價必須大於0";
+    }
+    if (!productData.unit.trim()) {
+      newErrors.unit = "單位不可為空";
+    }
+    if(productData.imagesUrl.length === 0) {
+      newErrors.imagesUrl = "圖片不可為空";
+    }
+    if(productData.description.trim() === "") {
+      newErrors.description = "產品描述不可為空";
+    }
+    if(productData.content.trim() === "") {
+      newErrors.content = "說明內容不可為空";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+    if (!validateForm(productData.data)) {
+      alert("表單驗證失敗: \n\n" + Object.values(newErrors).join("\n"));
+      return;
+    }
 
     try{
       await axios[method](url,productData);
       if(modalType==="create"){
-        alert(`${tempData.title}新增成功`);
+        alert(`${productData.data.title}新增成功`);
       }else{
-        alert(`${tempData.title}更新成功`);
+        alert(`${productData.data.title}更新成功`);
       }
-      await getProducts(current_page);
+      closeModal();
+      await getProducts();
     }catch(err){
-      console.log(err.response.data.message);
+      alert(`${modalType==="create"? "新增商品失敗: " : "更新商品失敗: "}${err.response.data.message}`);
     }
   }
 
@@ -65,7 +110,11 @@ const [tempData,setTempData] = React.useState(templateProduct);
     if(!tempData.imageUrl.trim()) return;
     const newImagesUrl = [...tempData.imagesUrl];
     newImagesUrl.unshift(tempData.imageUrl);
-    setTempData({...tempData, imagesUrl: newImagesUrl})
+    setTempData({...tempData, imagesUrl: newImagesUrl});
+    setErrors((prevErrors)=>({
+      ...prevErrors,
+      imagesUrl: ""
+    }))
   }
 
   const handleImageChange=(e,index)=>{
@@ -134,12 +183,12 @@ const [tempData,setTempData] = React.useState(templateProduct);
                           id="imageUrl"
                           name="imageUrl"
                           type="text"
-                          className="form-control"
+                          className={`form-control ${errors.imagesUrl ? "is-invalid" : ""}`}
                           placeholder="請輸入圖片連結"
                           onChange={handleModalInputChange}
                           value={tempData.imageUrl}
                           required
-                          autoFocus
+                          
                           />
                       </div>
                       <img className="img-fluid rounded" src={tempData.imageUrl || defaultImageUrl} alt="無法取得商品圖片" />
@@ -168,7 +217,7 @@ const [tempData,setTempData] = React.useState(templateProduct);
                                 value={url}
                                 onChange={(e)=>handleImageChange(e,index)}
                                 required
-                                autoFocus
+                                
                                 />
                             </div>
 
@@ -193,7 +242,7 @@ const [tempData,setTempData] = React.useState(templateProduct);
                         id="title"
                         name="title"
                         type="text"
-                        className="form-control"
+                        className={`form-control ${errors.title ? "is-invalid" : ""}`}
                         placeholder="請輸入標題"
                         value={tempData.title}
                       onChange={handleModalInputChange}
@@ -209,12 +258,12 @@ const [tempData,setTempData] = React.useState(templateProduct);
                           id="category"
                           name="category"
                           type="text"
-                          className="form-control"
+                          className={`form-control ${errors.category ? "is-invalid" : ""}`}
                           placeholder="請輸入分類"
                           value={tempData.category}
                       onChange={handleModalInputChange}
                       required
-                      autoFocus
+                      
                           />
                       </div>
                       <div className="mb-3 col-md-6">
@@ -222,12 +271,12 @@ const [tempData,setTempData] = React.useState(templateProduct);
                         <input
                           name="unit"
                           type="text"
-                          className="form-control"
+                          className={`form-control ${errors.unit ? "is-invalid" : ""}`}
                           placeholder="請輸入單位"
                           value={tempData.unit}
                       onChange={handleModalInputChange}
                       required
-                      autoFocus
+                      
                           />
                       </div>
                     </div>
@@ -240,12 +289,12 @@ const [tempData,setTempData] = React.useState(templateProduct);
                           name="origin_price"
                           type="number"
                           min="0"
-                          className="form-control"
+                          className={`form-control ${errors.origin_price ? "is-invalid" : ""}`}
                           placeholder="請輸入原價"
                           value={tempData.origin_price}
                       onChange={handleModalInputChange}
                       required
-                      autoFocus
+                      
                           />
                       </div>
                       <div className="mb-3 col-md-6">
@@ -255,12 +304,12 @@ const [tempData,setTempData] = React.useState(templateProduct);
                           name="price"
                           type="number"
                           min="0"
-                          className="form-control"
+                          className={`form-control ${errors.price ? "is-invalid" : ""}`}
                           placeholder="請輸入售價"
                           value={tempData.price}
                       onChange={handleModalInputChange}
                       required
-                      autoFocus
+                      
                           />
                       </div>
                     </div>
@@ -271,12 +320,12 @@ const [tempData,setTempData] = React.useState(templateProduct);
                       <textarea
                         id="description"
                         name="description"
-                        className="form-control"
+                        className={`form-control ${errors.description ? "is-invalid" : ""}`}
                         placeholder="請輸入產品描述"
                         value={tempData.description}
                       onChange={handleModalInputChange}
                       required
-                      autoFocus
+                      
                         ></textarea>
                     </div>
                     <div className="mb-3">
@@ -284,12 +333,12 @@ const [tempData,setTempData] = React.useState(templateProduct);
                       <textarea
                         id="content"
                         name="content"
-                        className="form-control"
+                        className={`form-control ${errors.content ? "is-invalid" : ""}`}
                         placeholder="請輸入說明內容"
                         value={tempData.content}
                       onChange={handleModalInputChange}
                       required
-                      autoFocus
+                      
                         ></textarea>
                     </div>
                     <div className="mb-3">
@@ -302,7 +351,7 @@ const [tempData,setTempData] = React.useState(templateProduct);
                           checked={tempData.is_enabled}
                       onChange={handleModalInputChange}
                       required
-                      autoFocus
+                      
                           />
                         <label className="form-check-label" htmlFor="is_enabled">
                           是否啟用
@@ -322,7 +371,7 @@ const [tempData,setTempData] = React.useState(templateProduct);
                 </button>
                 <button type="button" className={`btn btn-${modalType==="delete"?"danger":"primary"}`} 
                 //確認按鈕會根據updateProductIdRef是否有值來判斷是要呼叫新增或更新的API
-                onClick={()=>{ modalType==="delete"?deleteProduct(tempData.id):updateProduct(tempData.id); closeModal();}}
+                onClick={()=>{ modalType==="delete"?deleteProduct(tempData.id):updateProduct(tempData.id);}}
                 // data-bs-dismiss="modal"
                 >{modalType==="delete"?"確認刪除":"確認"}</button>
               </div>
